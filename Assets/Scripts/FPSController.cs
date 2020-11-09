@@ -11,6 +11,8 @@ public class FPSController : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
+    public float gold = 500.0f;
+    public AudioClip swapWeaponAudio;
 
     public GameObject weapon1;
     public GameObject weapon2;
@@ -19,20 +21,25 @@ public class FPSController : MonoBehaviour
     CharacterController characterController;
     Vector3 moveDirection = Vector3.zero;
     float rotationX = 0;
-    private GameObject currentWeapon;
+
+    public GameObject gameManager;
 
 
     [HideInInspector]
+    public GameObject currentWeapon;
     public bool canMove = true;
+    AudioSource audioSource;
 
     // Start is called before the first frame update
     void Start()
     {
         characterController = GetComponent<CharacterController>();
+        audioSource = GetComponent<AudioSource>();
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
         currentWeapon = weapon1;
+        gameManager.GetComponent<GameManager>().UIUpdate();
         currentWeapon.SetActive(true);
     }
 
@@ -44,33 +51,41 @@ public class FPSController : MonoBehaviour
 
 
     }
-    void WeaponControl()
+    private void WeaponControl()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
+        if (Input.GetKeyDown(KeyCode.Alpha1) && currentWeapon != weapon1)
+        {            
             currentWeapon = weapon1;
             currentWeapon.SetActive(true);
             weapon2.SetActive(false);
             currentWeapon.GetComponent<Weapon>().player = this.GetComponent<FPSController>();
+            audioSource.clip = swapWeaponAudio;
+            audioSource.Play();
         }
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        if (Input.GetKeyDown(KeyCode.Alpha2) && currentWeapon != weapon2)
         {
             currentWeapon = weapon2;
             currentWeapon.SetActive(true);
             weapon1.SetActive(false);
             currentWeapon.GetComponent<Weapon>().player = this.GetComponent<FPSController>();
+            audioSource.clip = swapWeaponAudio;
+            audioSource.Play();
         }
-        if(Input.GetMouseButtonDown(0))
+        if(Input.GetMouseButtonDown(0) && currentWeapon == weapon1)
         {
             currentWeapon.GetComponent<Weapon>().Fire();
         }
-        if(Input.GetKeyDown(KeyCode.R))
+        if (Input.GetMouseButton(0) && currentWeapon == weapon2)
+        {
+            currentWeapon.GetComponent<Weapon>().Fire();
+        }
+        if (Input.GetKeyDown(KeyCode.R))
         {
             StartCoroutine(currentWeapon.GetComponent<Weapon>().Reload());
         }
     }
 
-    void MovementControl()
+    private void MovementControl()
     {
         Vector3 forwad = transform.TransformDirection(Vector3.forward);
         Vector3 right = transform.TransformDirection(Vector3.right);
@@ -102,5 +117,23 @@ public class FPSController : MonoBehaviour
             transform.rotation *= Quaternion.Euler(0, Input.GetAxis("Mouse X") * lookSpeed, 0);
         }
 
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("PickUp"))
+        {
+            PickUp pickup = other.gameObject.GetComponent<PickUp>();
+            if (pickup != null)
+            {
+                audioSource.clip = pickup.sound;
+                audioSource.Play();
+                Debug.Log("pickUp");
+                gold += pickup.Collect();
+                Destroy(other.gameObject);
+                gameManager.GetComponent<GameManager>().UIUpdate();
+                //ServiceLocator.Get<UIManager>().UpdateScoreDisplay(playerPoints);
+            }
+        }
     }
 }
