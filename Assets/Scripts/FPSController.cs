@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FPSController : MonoBehaviour
+public class FPSController : MonoBehaviour, IEntity
 {
     public float walkingSpeed = 7.5f;
     public float runningSpeed = 11.5f;
@@ -11,19 +11,19 @@ public class FPSController : MonoBehaviour
     public Camera playerCamera;
     public float lookSpeed = 2.0f;
     public float lookXLimit = 45.0f;
-    public float gold = 500.0f;
-    public AudioClip swapWeaponAudio;
+    public float gold = 0f;
+    public float HP = 100;
+    
 
     public GameObject weapon1;
     public GameObject weapon2;
-
+    public AudioClip swapWeapon;
+    public AudioClip eatSound;
 
     CharacterController characterController;
     Vector3 moveDirection = Vector3.zero;
     float rotationX = 0;
-
-    public GameObject gameManager;
-
+    float hurtCooldown = 0f;
 
     [HideInInspector]
     public GameObject currentWeapon;
@@ -39,7 +39,6 @@ public class FPSController : MonoBehaviour
         Cursor.visible = false;
 
         currentWeapon = weapon1;
-        gameManager.GetComponent<GameManager>().UIUpdate();
         currentWeapon.SetActive(true);
     }
 
@@ -48,6 +47,10 @@ public class FPSController : MonoBehaviour
     {
         MovementControl();
         WeaponControl();
+        if (hurtCooldown > 0)
+        {
+            hurtCooldown -= Time.deltaTime;
+        }
 
 
     }
@@ -59,7 +62,7 @@ public class FPSController : MonoBehaviour
             currentWeapon.SetActive(true);
             weapon2.SetActive(false);
             currentWeapon.GetComponent<Weapon>().player = this.GetComponent<FPSController>();
-            audioSource.clip = swapWeaponAudio;
+            audioSource.clip = swapWeapon;
             audioSource.Play();
         }
         if (Input.GetKeyDown(KeyCode.Alpha2) && currentWeapon != weapon2)
@@ -68,7 +71,7 @@ public class FPSController : MonoBehaviour
             currentWeapon.SetActive(true);
             weapon1.SetActive(false);
             currentWeapon.GetComponent<Weapon>().player = this.GetComponent<FPSController>();
-            audioSource.clip = swapWeaponAudio;
+            audioSource.clip = swapWeapon;
             audioSource.Play();
         }
         if(Input.GetMouseButtonDown(0) && currentWeapon == weapon1)
@@ -118,6 +121,7 @@ public class FPSController : MonoBehaviour
         }
 
     }
+    
 
     private void OnTriggerEnter(Collider other)
     {
@@ -131,9 +135,34 @@ public class FPSController : MonoBehaviour
                 Debug.Log("pickUp");
                 gold += pickup.Collect();
                 Destroy(other.gameObject);
-                gameManager.GetComponent<GameManager>().UIUpdate();
                 //ServiceLocator.Get<UIManager>().UpdateScoreDisplay(playerPoints);
             }
         }
+        
+        if (other.gameObject.CompareTag("Monster") && hurtCooldown <= 0)
+        {
+            Monster monster = other.gameObject.GetComponent<Monster>();
+            if (monster != null)
+            {
+                audioSource.clip = eatSound;
+                audioSource.Play();
+                Debug.Log("player got hit");
+                ApplyDamage(monster.attackDamage);
+                hurtCooldown = 0.2f;
+            }
+        }
     }
+
+    public void ApplyDamage(float points)
+    {
+        HP -= points;
+
+        if (HP <= 0)
+        {
+            //Player is dead
+            canMove = false;
+            HP = 0;
+        }
+    }
+
 }

@@ -13,7 +13,7 @@ public class Bullet : MonoBehaviour
     Vector3 oldPos;
     bool hasHit = false;
 
-    float damagePoints;
+    private float damagePoints;
 
     // Start is called before the first frame update
     IEnumerator Start()
@@ -67,8 +67,7 @@ public class Bullet : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         Destroy(gameObject);
     }
-
-    //Set how much damage this bullet will deal
+    
     public void SetDamage(float points)
     {
         damagePoints = points;

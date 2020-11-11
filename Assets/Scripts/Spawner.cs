@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class Spawner : MonoBehaviour
 {
     public GameObject[] enemyPrefabs;
-    public DamageReciever player;
+    public FPSController player;
     public Texture crosshairTexture;
     public float spawnInterval = 2; //Spawn new enemy each n seconds
     public int enemiesPerWave = 5; //How many enemies per wave
@@ -24,11 +24,9 @@ public class Spawner : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //Lock cursor
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-
-        //Wait 10 seconds for new wave to start
+        
         newWaveTimer = 5;
         waitingForWave = true;
     }
@@ -69,7 +67,7 @@ public class Spawner : MonoBehaviour
             }
         }
 
-        if (player.playerHP <= 0)
+        if (player.HP <= 0)
         {
             if (Input.GetKeyDown(KeyCode.Space))
             {
@@ -80,10 +78,11 @@ public class Spawner : MonoBehaviour
     }
     void OnGUI()
     {
-        GUI.Box(new Rect(10, Screen.height - 35, 100, 25), ((int)player.playerHP).ToString() + " HP");
-        GUI.Box(new Rect(Screen.width / 2 - 35, Screen.height - 35, 70, 25), player.playerController.currentWeapon.GetComponent<Weapon>().bulletsPerMagazine.ToString());
-
-        if (player.playerHP <= 0)
+        
+        GUI.Box(new Rect(10, Screen.height - 35, 100, 25), ((int)player.HP).ToString() + " HP");
+        GUI.Box(new Rect(Screen.width / 2 - 10, Screen.height - 65, 70, 25), "Ammo: " + player.currentWeapon.GetComponent<Weapon>().bulletsPerMagazine.ToString());
+        
+        if (player.HP <= 0)
         {
             GUI.Box(new Rect(Screen.width / 2 - 75, Screen.height / 2 - 20, 150, 40), "Game Over\nPress 'Space' to Restart");
         }
@@ -93,11 +92,12 @@ public class Spawner : MonoBehaviour
         }
 
         GUI.Box(new Rect(Screen.width / 2 - 50, 10, 100, 25), (enemiesToEliminate - enemiesEliminated).ToString());
-
+        
         if (waitingForWave)
         {
             GUI.Box(new Rect(Screen.width / 2 - 125, Screen.height / 4 - 12, 250, 25), "Waiting for Wave " + waveNumber.ToString() + ". " + ((int)newWaveTimer).ToString() + " seconds left...");
         }
+        
     }
 
     public void EnemyEliminated(Monster enemy)

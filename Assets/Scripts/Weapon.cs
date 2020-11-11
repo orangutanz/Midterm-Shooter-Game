@@ -77,19 +77,16 @@ public class Weapon : MonoBehaviour
 
     public IEnumerator Reload()
     {
-        if(canFire)
-        {
-            canFire = false;
+        canFire = false;
 
-            audioSource.clip = reloadAudio;
-            audioSource.Play();
+        audioSource.clip = reloadAudio;
+        audioSource.Play();
 
-            yield return new WaitForSeconds(timeToReload);
+        yield return new WaitForSeconds(timeToReload);
 
-            bulletsPerMagazine = bulletsPerMagazineDefault;
+        bulletsPerMagazine = bulletsPerMagazineDefault;
 
-            canFire = true;
-        }
+        canFire = true;
     }
 
 }

@@ -12,10 +12,11 @@ public class Monster : MonoBehaviour, IEntity
     public float movementSpeed = 4f;
     public float npcHP = 100;
     //How much damage will npc deal to the player
-    public float npcDamage = 5;
+    public float attackDamage = 5;
     public float attackRate = 0.5f;
     public Transform firePoint;
     public GameObject dropPrefab;
+    public AudioClip DieSound;
 
     public Transform playerTransform;
     public Spawner es;
@@ -47,12 +48,13 @@ public class Monster : MonoBehaviour, IEntity
                 RaycastHit hit;
                 if (Physics.Raycast(firePoint.position, firePoint.forward, out hit, attackDistance))
                 {
+                    Debug.Log("Hit player");
                     if (hit.transform.CompareTag("Player"))
                     {
                         Debug.DrawLine(firePoint.position, firePoint.position + firePoint.forward * attackDistance, Color.cyan);
 
                         IEntity player = hit.transform.GetComponent<IEntity>();
-                        player.ApplyDamage(npcDamage);
+                        player.ApplyDamage(attackDamage);
                     }
                 }
             }
@@ -73,8 +75,14 @@ public class Monster : MonoBehaviour, IEntity
             Vector3 position = new Vector3(transform.position.x, transform.position.y + 0.3f, transform.position.z);
             GameObject coinDrop = Instantiate(dropPrefab, position, dropPrefab.transform.rotation);
             Destroy(coinDrop, 10);
+            GetComponent<AudioSource>().clip = DieSound;
+            GetComponent<AudioSource>().Play();
             es.EnemyEliminated(this);
-            Destroy(gameObject);
+            Destroy(gameObject, 0.05f);
         }
     }
+    
+
+
+
 }

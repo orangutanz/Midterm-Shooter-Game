@@ -129,9 +129,10 @@ MonoBehaviour:
   fireRate: 0.1
   bulletPrefab: {fileID: 0}
   firePoint: {fileID: 0}
-  bulletsPerMagazine: 30
+  bulletsPerMagazine: 15
   timeToReload: 1.5
-  weaponDamage: 15
+  weaponDamage: 100
   fireAudio: {fileID: 0}
   reloadAudio: {fileID: 0}
+  playerObj: {fileID: 0}
   player: {fileID: 0}
